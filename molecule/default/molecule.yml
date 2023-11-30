@@ -1,0 +1,18 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+platforms:
+  - name: restic
+    box: rockylinux/9
+    memory: 1024
+    cpu: 1
+provisioner:
+  name: ansible
+  playbooks:
+    cleanup: cleanup.yml
+verifier:
+  name: ansible

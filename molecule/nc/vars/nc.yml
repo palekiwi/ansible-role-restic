@@ -1,0 +1,12 @@
+---
+nc_user: vagrant
+
+nc_app_volumes_dir: /mnt/nc
+nc_db_volumes_dir: /mnt/nc_db
+
+nc_app_pod_name: nc
+nc_db_pod_name: nc_db
+
+nc_db_user: nextcloud
+nc_db_database: nextcloud
+nc_db_password: nextcloud

@@ -1,0 +1,37 @@
+[Unit]
+Description=Backup service for {{ nc_app_pod_name }} data and database.
+Requires=container-{{ nc_db_pod_name }}_container.service container-{{ nc_app_pod_name }}_container.service
+After=container-{{ nc_db_pod_name }}_container.service container-{{ nc_app_pod_name }}_container.service
+
+[Service]
+Type=oneshot
+
+Environment="RESTIC_REPOSITORY=/mnt/backup/nc"
+Environment="RESTIC_PASSWORD_FILE=/home/vagrant/.restic-nc"
+Environment="DB_DUMP_PATH=/tmp/db.bak"
+Environment="NC_DATA_PATH={{ nc_app_volumes_dir }}/data"
+
+# Pre Tasks
+ExecStartPre=podman exec -u www-data \
+    {{ nc_app_pod_name }}_container php occ maintenance:mode --on
+
+ExecStartPre=/bin/bash -c "podman exec -it {{ nc_db_pod_name }}_container \
+    mariadb-dump --single-transaction \
+    -u {{ nc_db_user }} -p{{ nc_db_password }} {{ nc_db_database }} > $DB_DUMP_PATH"
+
+# Main Tasks
+ExecStart=podman unshare restic -v backup $NC_DATA_PATH
+ExecStart=restic -v backup $DB_DUMP_PATH
+
+# Post Tasks
+ExecStopPost=podman exec -u www-data \
+    {{ nc_app_pod_name }}_container php occ maintenance:mode --off
+
+ExecStopPost=rm $DB_DUMP_PATH
+
+# Logging
+StandardOutput=append:/tmp/out.log
+StandardError=append:/tmp/err.log
+
+[Install]
+WantedBy=default.target

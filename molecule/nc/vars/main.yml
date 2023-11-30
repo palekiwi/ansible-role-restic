@@ -1,0 +1,6 @@
+---
+restic_user: vagrant
+
+restic_repository: /mnt/backup/nc
+restic_password: "secret"
+restic_password_file: /home/{{ restic_user }}/.restic-{{ restic_repository | basename }}

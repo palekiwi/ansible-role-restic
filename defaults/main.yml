@@ -1,0 +1,11 @@
+---
+restic_user: "{{ ansible_user }}"
+
+# path to the repository
+restic_repository: ""
+
+# password
+restic_password: "secret"
+
+# path to password file on remote
+restic_password_file: /home/{{ restic_user }}/.restic-{{ restic_repository | basename }}

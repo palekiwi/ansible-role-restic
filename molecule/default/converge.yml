@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: all
+
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+    - name: "Include palekiwi.restic"
+      ansible.builtin.include_role:
+        name: "palekiwi.restic"

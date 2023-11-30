@@ -1,0 +1,24 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+
+  vars:
+    use_tailscale: false
+
+  tasks:
+    - name: Test server response with tailscale.
+      when: use_tailscale
+      ansible.builtin.uri:
+        url: "https://{{ inventory_hostname_short }}.tail6c0a5.ts.net"
+        return_content: true
+        status_code: 200
+      register: response
+      retries: 3
+      failed_when: "'login' not in response.content"
+
+    - name: Print machine IP address.
+      ansible.builtin.debug:
+        var: ansible_host

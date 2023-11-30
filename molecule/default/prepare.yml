@@ -1,0 +1,39 @@
+---
+- name: Prepare
+  become: true
+  hosts: all
+
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+    - name: Include epel role.
+      ansible.builtin.include_role:
+        name: palekiwi.epel
+
+    - name: Ensure podman is installed.
+      ansible.builtin.dnf:
+        name: podman
+        state: present
+
+    - name: Setup directories and files for scenario.
+      block:
+        - name: Ensure required directories exist.
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: directory
+            mode: "0755"
+            owner: vagrant
+            group: vagrant
+          loop:
+            - "{{ restic_repository }}"
+            - "{{ backup_path }}"
+
+        - name: Create sample files in {{ source_path }}.
+          ansible.builtin.file:
+            path: "{{ backup_path }}/file_{{ item }}"
+            state: touch
+            mode: "0644"
+            owner: "vagrant"
+            group: "vagrant"
+          loop: "{{ range(0, 5) | list }}"

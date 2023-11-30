@@ -1,0 +1,28 @@
+---
+- name: Converge
+  hosts: all
+
+  vars_files:
+    - vars/main.yml
+    - vars/nc.yml
+
+  tasks:
+    - name: Ensure dir exists for restic to create a repository.
+      become: true
+      ansible.builtin.file:
+        path: "{{ restic_repository }}"
+        owner: vagrant
+        group: vagrant
+        mode: "0755"
+        state: directory
+
+    - name: "Include palekiwi.restic"
+      ansible.builtin.include_role:
+        name: "palekiwi.restic"
+
+    - name: Install service template.
+      ansible.builtin.template:
+        src: templates/restic.service.j2
+        dest: /home/{{ restic_user }}/.config/systemd/user/restic-nc.service
+        mode: "0644"
+        force: true

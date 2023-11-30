@@ -1,0 +1,30 @@
+---
+- name: Ensure restic is installed on the system.
+  become: true
+  ansible.builtin.dnf:
+    name: restic
+    state: present
+
+- name: Run tasks for user {{ restic_user }}.
+  become: true
+  become_user: "{{ restic_user }}"
+  block:
+    - name: Attempt to initialize a repository.
+      block:
+        - name: Ensure a password file exists.
+          ansible.builtin.copy:
+            content: "{{ restic_password }}"
+            dest: "{{ restic_password_file }}"
+            owner: "{{ restic_user }}"
+            group: "{{ restic_user }}"
+            mode: "0600"
+
+        - name: Ensure a restic repository has been initialized.
+          ansible.builtin.command:
+            cmd: "restic init"
+          register: init
+          changed_when: "'created restic repository' in init.stdout"
+          failed_when: "(init.stderr != '') and 'config file already exists' not in init.stderr"
+          environment:
+            RESTIC_REPOSITORY: "{{ restic_repository }}"
+            RESTIC_PASSWORD_FILE: "{{ restic_password_file }}"
